@@ -22,9 +22,9 @@ export default function Home() {
         <Nav />
         <Hero />
         <Stats />
+        <RecentTokens />
         <HowItWorks />
         <LaunchForm />
-        <RecentTokens />
         <Footer />
       </div>
     </main>

@@ -185,13 +185,9 @@ export function LaunchForm() {
 
               {/* Fee breakdown */}
               <div style={{ background: 'rgba(147,51,234,0.08)', border: '1px solid rgba(147,51,234,0.2)', borderRadius: '0.75rem', padding: '1rem' }}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-400">Creation fee</span>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-slate-400">One-time creation fee</span>
                   <span className="font-semibold text-white">{CREATION_FEE_ETH} ETH (~$5)</span>
-                </div>
-                <div className="flex justify-between text-sm mb-3">
-                  <span className="text-slate-400">CoinForge treasury</span>
-                  <span className="text-purple-300">0.1% of supply</span>
                 </div>
                 <p className="text-xs text-slate-500">
                   ✓ No owner controls &nbsp;·&nbsp; ✓ Immutable ERC20 &nbsp;·&nbsp; ✓ No minting after launch
