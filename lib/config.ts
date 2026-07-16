@@ -12,8 +12,8 @@ export const abstractMainnet = defineChain({
   },
 })
 
-export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_FACTORY_ADDRESS ?? '0xE1fb876579288A0d4C50BC1A4eD8ffF03Ce42A80') as `0x${string}`
-export const AIRDROP_ADDRESS = (process.env.NEXT_PUBLIC_AIRDROP_ADDRESS ?? '0x356f7c46099Beb9c0a0eeD6905f78b7081B37148') as `0x${string}`
+export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_FACTORY_ADDRESS ?? '0x0cCCB162210beEda64b62e323885282Ab437bE81') as `0x${string}`
+export const AIRDROP_ADDRESS = (process.env.NEXT_PUBLIC_AIRDROP_ADDRESS ?? '0xd22e8e4Ef90f26C14A56384d703c79a5a0818eB8') as `0x${string}`
 export const ABSTRACT_CHAIN_ID = 2741
 export const CREATION_FEE = BigInt('1500000000000000') // 0.0015 ETH
 export const CREATION_FEE_ETH = '0.0015'

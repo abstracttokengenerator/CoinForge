@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createPublicClient, http } from 'viem'
 import { abstract } from 'viem/chains'
 
-const FACTORY = '0xE1fb876579288A0d4C50BC1A4eD8ffF03Ce42A80' as `0x${string}`
+const FACTORY = '0x0cCCB162210beEda64b62e323885282Ab437bE81' as `0x${string}`
 
 const FACTORY_ABI = [
   { name: 'getTokenCount', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] },
@@ -13,7 +13,7 @@ const FACTORY_ABI = [
       { name: 'tokenAddress', type: 'address' }, { name: 'creator', type: 'address' },
       { name: 'name', type: 'string' }, { name: 'symbol', type: 'string' },
       { name: 'totalSupply', type: 'uint256' }, { name: 'description', type: 'string' },
-      { name: 'website', type: 'string' }, { name: 'createdAt', type: 'uint256' },
+      { name: 'website', type: 'string' }, { name: 'imageUrl', type: 'string' }, { name: 'createdAt', type: 'uint256' },
     ]}],
   },
 ] as const
@@ -41,7 +41,7 @@ async function getCoinForgeTokens() {
       fromCoinForge: true,
       description: t.description as string,
       priceUsd: null, priceChange24h: null, volume24h: null,
-      liquidity: null, imageUrl: null, dexUrl: null,
+      liquidity: null, imageUrl: (t.imageUrl as string) || null, dexUrl: null,
     }))
   } catch (e) {
     console.error('Factory read error:', e)
