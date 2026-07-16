@@ -113,7 +113,7 @@ export function RecentTokens() {
               <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-700">
                 <span>{formatTime(Number(token.createdAt) as unknown as number)}</span>
                 <a
-                  href={`${EXPLORER_URL}/address/${token.tokenAddress}`}
+                  href={`${EXPLORER_URL}/token/${token.tokenAddress}#transactions`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-purple-400 hover:text-purple-300 transition"
