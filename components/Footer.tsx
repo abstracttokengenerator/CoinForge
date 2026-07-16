@@ -85,12 +85,12 @@ export function Footer() {
             <h4 className="font-semibold mb-4">Follow</h4>
             <div className="flex gap-4">
               <a
-                href="https://twitter.com"
+                href="https://x.com/tokencreater"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-white transition text-sm"
+                className="text-slate-400 hover:text-white transition text-sm flex items-center gap-1"
               >
-                𝕏 / Twitter
+                𝕏 @tokencreater
               </a>
             </div>
           </div>

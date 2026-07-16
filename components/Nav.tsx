@@ -35,6 +35,14 @@ export function Nav() {
         }}>
           🚀 Launch
         </Link>
+        <a href="https://x.com/tokencreater" target="_blank" rel="noopener noreferrer" style={{
+          textDecoration: 'none',
+          color: 'rgba(255,255,255,0.5)',
+          fontSize: '0.85rem',
+          transition: 'color 0.2s',
+        }}>
+          𝕏
+        </a>
         <Link href="/airdrop" style={{
           textDecoration: 'none',
           color: pathname === '/airdrop' ? '#34d399' : 'rgba(255,255,255,0.6)',
