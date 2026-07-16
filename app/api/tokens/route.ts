@@ -2,69 +2,46 @@ import { NextResponse } from 'next/server'
 import { createPublicClient, http } from 'viem'
 import { abstract } from 'viem/chains'
 
-const ETHERSCAN_KEY = process.env.ETHERSCAN_API_KEY ?? ''
 const FACTORY = '0xE1fb876579288A0d4C50BC1A4eD8ffF03Ce42A80' as `0x${string}`
-const CHAIN_ID = 2741
 
 const FACTORY_ABI = [
+  { name: 'getTokenCount', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] },
   {
-    name: 'getTokenCount',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    name: 'getTokens',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [
-      { name: 'offset', type: 'uint256' },
-      { name: 'limit',  type: 'uint256' },
-    ],
-    outputs: [{
-      type: 'tuple[]',
-      components: [
-        { name: 'tokenAddress', type: 'address' },
-        { name: 'creator',      type: 'address' },
-        { name: 'name',         type: 'string'  },
-        { name: 'symbol',       type: 'string'  },
-        { name: 'totalSupply',  type: 'uint256' },
-        { name: 'description',  type: 'string'  },
-        { name: 'website',      type: 'string'  },
-        { name: 'createdAt',    type: 'uint256' },
-      ],
-    }],
+    name: 'getTokens', type: 'function', stateMutability: 'view',
+    inputs: [{ name: 'offset', type: 'uint256' }, { name: 'limit', type: 'uint256' }],
+    outputs: [{ type: 'tuple[]', components: [
+      { name: 'tokenAddress', type: 'address' }, { name: 'creator', type: 'address' },
+      { name: 'name', type: 'string' }, { name: 'symbol', type: 'string' },
+      { name: 'totalSupply', type: 'uint256' }, { name: 'description', type: 'string' },
+      { name: 'website', type: 'string' }, { name: 'createdAt', type: 'uint256' },
+    ]}],
   },
 ] as const
 
-// Curated well-known Abstract ecosystem tokens
-const ECOSYSTEM_TOKENS = [
-  { contractAddress: '0x48b62137edFa8c6A3ca5e46A26DFD67cAE58bD23', tokenName: 'Pengu',    tokenSymbol: 'PENGU', timeStamp: '1700000000', fromCoinForge: false },
-  { contractAddress: '0x4C68E4102c0F120cce9F08625bd12079806b7C4D', tokenName: 'ABX Token', tokenSymbol: 'ABX',   timeStamp: '1700000010', fromCoinForge: false },
+// All known Abstract ecosystem tokens to query from DexScreener
+const ABSTRACT_TOKEN_SYMBOLS = [
+  'PENGU', 'NOOT', 'KONA', 'RETSBA', 'ABSTER', 'ABX', 'PANDA',
+  'ABSTRACT', 'ABS', 'MEME', 'WOJAK', 'PEPE', 'DOGE', 'SHIB',
 ]
 
 async function getCoinForgeTokens() {
   try {
     const client = createPublicClient({ chain: abstract, transport: http('https://api.mainnet.abs.xyz') })
-
     const count = await client.readContract({ address: FACTORY, abi: FACTORY_ABI, functionName: 'getTokenCount' })
     if (!count || count === 0n) return []
-
     const tokens = await client.readContract({
-      address: FACTORY,
-      abi: FACTORY_ABI,
-      functionName: 'getTokens',
-      args: [0n, count > 50n ? 50n : count],
+      address: FACTORY, abi: FACTORY_ABI, functionName: 'getTokens',
+      args: [0n, count > 100n ? 100n : count],
     }) as any[]
-
     return tokens.map((t: any) => ({
       contractAddress: t.tokenAddress as string,
-      tokenName:       t.name as string,
-      tokenSymbol:     t.symbol as string,
-      timeStamp:       t.createdAt.toString(),
-      fromCoinForge:   true,
-      description:     t.description as string,
+      tokenName: t.name as string,
+      tokenSymbol: t.symbol as string,
+      timeStamp: t.createdAt.toString(),
+      fromCoinForge: true,
+      description: t.description as string,
+      priceUsd: null, priceChange24h: null, volume24h: null,
+      liquidity: null, imageUrl: null, dexUrl: null,
     }))
   } catch (e) {
     console.error('Factory read error:', e)
@@ -72,54 +49,109 @@ async function getCoinForgeTokens() {
   }
 }
 
-async function getRecentAbstractTokens(excludeAddresses: string[]) {
-  // Query Etherscan for recent ERC20 token transfers on Abstract
-  // Use a well-known active address to get recent token activity
+async function getDexScreenerTokens(): Promise<any[]> {
   try {
-    const url = `https://api.etherscan.io/v2/api?chainid=${CHAIN_ID}&module=account&action=tokentx&address=${FACTORY}&page=1&offset=50&sort=desc&apikey=${ETHERSCAN_KEY}`
-    const res = await fetch(url, { next: { revalidate: 120 } })
-    const data = await res.json()
-    if (data.status !== '1' || !Array.isArray(data.result)) return []
+    // Search for all known Abstract tokens
+    const queries = ['abstract chain tokens', 'noot abstract', 'pengu abstract', 'kona abstract', 'retsba', 'abster abstract']
+    
+    const results = await Promise.all(
+      queries.map(q =>
+        fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`, {
+          next: { revalidate: 120 },
+          headers: { 'Accept': 'application/json' },
+        })
+          .then(r => r.json())
+          .catch(() => ({ pairs: [] }))
+      )
+    )
 
-    const seen = new Set(excludeAddresses.map(a => a.toLowerCase()))
+    const seen = new Set<string>()
     const tokens: any[] = []
 
-    for (const tx of data.result) {
-      const addr = tx.contractAddress?.toLowerCase()
-      if (!addr || seen.has(addr) || addr === '0x000000000000000000000000000000000000800a') continue
-      if (!tx.tokenName || !tx.tokenSymbol) continue
-      seen.add(addr)
-      tokens.push({
-        contractAddress: tx.contractAddress,
-        tokenName:       tx.tokenName,
-        tokenSymbol:     tx.tokenSymbol,
-        timeStamp:       tx.timeStamp,
-        fromCoinForge:   false,
-        txHash:          tx.hash,
-      })
+    for (const result of results) {
+      const pairs = result.pairs ?? []
+      for (const pair of pairs) {
+        if (pair.chainId !== 'abstract') continue
+        const addr = pair.baseToken?.address?.toLowerCase()
+        if (!addr || seen.has(addr)) continue
+        seen.add(addr)
+        tokens.push({
+          contractAddress: pair.baseToken.address,
+          tokenName: pair.baseToken.name,
+          tokenSymbol: pair.baseToken.symbol,
+          timeStamp: pair.pairCreatedAt ? String(Math.floor(pair.pairCreatedAt / 1000)) : '0',
+          fromCoinForge: false,
+          priceUsd: pair.priceUsd ? parseFloat(pair.priceUsd) : null,
+          priceChange24h: pair.priceChange?.h24 ?? null,
+          volume24h: pair.volume?.h24 ?? null,
+          liquidity: pair.liquidity?.usd ?? null,
+          marketCap: pair.marketCap ?? pair.fdv ?? null,
+          imageUrl: pair.info?.imageUrl ?? null,
+          dexUrl: pair.url ?? null,
+        })
+      }
     }
+
+    // Also batch-fetch by known symbols
+    const batchResults = await Promise.all(
+      ABSTRACT_TOKEN_SYMBOLS.map(sym =>
+        fetch(`https://api.dexscreener.com/latest/dex/search?q=${sym}`, {
+          next: { revalidate: 120 },
+        })
+          .then(r => r.json())
+          .catch(() => ({ pairs: [] }))
+      )
+    )
+
+    for (const result of batchResults) {
+      const pairs = result.pairs ?? []
+      for (const pair of pairs) {
+        if (pair.chainId !== 'abstract') continue
+        const addr = pair.baseToken?.address?.toLowerCase()
+        if (!addr || seen.has(addr)) continue
+        seen.add(addr)
+        tokens.push({
+          contractAddress: pair.baseToken.address,
+          tokenName: pair.baseToken.name,
+          tokenSymbol: pair.baseToken.symbol,
+          timeStamp: pair.pairCreatedAt ? String(Math.floor(pair.pairCreatedAt / 1000)) : '0',
+          fromCoinForge: false,
+          priceUsd: pair.priceUsd ? parseFloat(pair.priceUsd) : null,
+          priceChange24h: pair.priceChange?.h24 ?? null,
+          volume24h: pair.volume?.h24 ?? null,
+          liquidity: pair.liquidity?.usd ?? null,
+          marketCap: pair.marketCap ?? pair.fdv ?? null,
+          imageUrl: pair.info?.imageUrl ?? null,
+          dexUrl: pair.url ?? null,
+        })
+      }
+    }
+
     return tokens
-  } catch {
+  } catch (e) {
+    console.error('DexScreener error:', e)
     return []
   }
 }
 
 export async function GET() {
-  // 1. Get CoinForge tokens directly from smart contract (always accurate)
-  const coinforgeTokens = await getCoinForgeTokens()
+  const [coinforgeTokens, dexTokens] = await Promise.all([
+    getCoinForgeTokens(),
+    getDexScreenerTokens(),
+  ])
 
-  // 2. Get broader Abstract tokens from Etherscan
-  const excludeAddrs = coinforgeTokens.map((t: any) => t.contractAddress)
-  const abstractTokens = await getRecentAbstractTokens(excludeAddrs)
+  // Merge: don't duplicate CoinForge tokens that might also be on DexScreener
+  const cfAddrs = new Set(coinforgeTokens.map((t: any) => t.contractAddress.toLowerCase()))
+  const filteredDex = dexTokens.filter((t: any) => !cfAddrs.has(t.contractAddress.toLowerCase()))
 
-  // 3. Merge: ecosystem tokens fill in anything else
-  const allKnown = new Set([...coinforgeTokens, ...abstractTokens].map((t: any) => t.contractAddress.toLowerCase()))
-  const ecosystem = ECOSYSTEM_TOKENS.filter(t => !allKnown.has(t.contractAddress.toLowerCase()))
+  // Enrich CoinForge tokens with DexScreener price data if available
+  const enrichedCF = coinforgeTokens.map((t: any) => {
+    const dex = dexTokens.find((d: any) => d.contractAddress.toLowerCase() === t.contractAddress.toLowerCase())
+    return dex ? { ...t, ...dex, fromCoinForge: true } : t
+  })
 
-  const all = [...coinforgeTokens, ...abstractTokens, ...ecosystem]
-
-  // Sort newest first
+  const all = [...enrichedCF, ...filteredDex]
   all.sort((a: any, b: any) => Number(b.timeStamp) - Number(a.timeStamp))
 
-  return NextResponse.json({ tokens: all.slice(0, 50), updatedAt: Date.now() })
+  return NextResponse.json({ tokens: all.slice(0, 60), updatedAt: Date.now() })
 }
