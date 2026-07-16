@@ -1,16 +1,12 @@
 'use client'
 
 import { AbstractWalletProvider } from '@abstract-foundation/agw-react'
-import { http } from 'viem'
+import { abstract } from 'viem/chains'
 import { Toaster } from 'react-hot-toast'
-import { abstractMainnet } from '@/lib/config'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AbstractWalletProvider
-      chain={abstractMainnet}
-      transport={http('https://api.mainnet.abs.xyz')}
-    >
+    <AbstractWalletProvider chain={abstract}>
       {children}
       <Toaster
         position="bottom-right"

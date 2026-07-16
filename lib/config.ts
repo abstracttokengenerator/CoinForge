@@ -1,17 +1,7 @@
-import { defineChain } from 'viem'
+import { abstract } from 'viem/chains'
 
-// Abstract mainnet chain definition for viem/wagmi
-export const abstractMainnet = defineChain({
-  id: 2741,
-  name: 'Abstract',
-  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://api.mainnet.abs.xyz'] },
-  },
-  blockExplorers: {
-    default: { name: 'Abscan', url: 'https://abscan.org' },
-  },
-})
+// Use the official abstract chain from viem/chains
+export const abstractMainnet = abstract
 
 export const FACTORY_ADDRESS = (process.env.NEXT_PUBLIC_FACTORY_ADDRESS ?? '0xE1fb876579288A0d4C50BC1A4eD8ffF03Ce42A80') as `0x${string}`
 export const AIRDROP_ADDRESS = (process.env.NEXT_PUBLIC_AIRDROP_ADDRESS ?? '0x356f7c46099Beb9c0a0eeD6905f78b7081B37148') as `0x${string}`
