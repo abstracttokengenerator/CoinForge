@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { ERC20_ABI, AIRDROP_ABI } from '@/lib/airdropAbi'
 import { AIRDROP_ADDRESS, AIRDROP_FEE_ETH, EXPLORER_URL } from '@/lib/config'
 import { Plus, Trash2, Upload, ExternalLink } from 'lucide-react'
+import { BrowserBanner } from '@/components/BrowserBanner'
 
 interface Recipient { address: string; amount: string }
 
@@ -163,6 +164,7 @@ export function AirdropForm() {
   return (
     <section className="py-16 px-4" style={{ minHeight: '100vh' }}>
       <div className="max-w-3xl mx-auto">
+        <BrowserBanner />
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-black mb-4 gradient-text">🪂 Batch Airdrop</h1>

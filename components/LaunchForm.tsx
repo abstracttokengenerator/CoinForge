@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import { TOKEN_FACTORY_ABI } from '@/lib/abi'
 import { FACTORY_ADDRESS, CREATION_FEE_ETH, EXPLORER_URL } from '@/lib/config'
 import { Share2, ExternalLink, Rocket } from 'lucide-react'
+import { BrowserBanner } from '@/components/BrowserBanner'
 
 type FormState = 'idle' | 'submitting' | 'success'
 
@@ -95,6 +96,7 @@ export function LaunchForm() {
           Fill in the details and your token deploys in seconds
         </p>
 
+        <BrowserBanner />
         <AnimatePresence mode="wait">
           {!deployedToken ? (
             <motion.form
