@@ -192,7 +192,7 @@ export function LaunchForm() {
                   <span className="font-semibold text-white">{CREATION_FEE_ETH} ETH (~$5)</span>
                 </div>
                 <div className="flex justify-between text-sm mb-3">
-                  <span className="text-slate-400">CoinForge fee</span>
+                  <span className="text-slate-400">Treasury</span>
                   <span className="text-purple-300">0.1% of supply</span>
                 </div>
                 <p className="text-xs text-slate-500">

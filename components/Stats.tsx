@@ -32,7 +32,7 @@ export function Stats() {
         {[
           { label: 'Tokens Launched', value: mounted ? count : 0, icon: '🚀' },
           { label: 'Creation Fee', value: '~$5', icon: '💵' },
-          { label: 'CoinForge Fee', value: '0.1% supply', icon: '💎' },
+          { label: 'Treasury', value: '0.1% supply', icon: '💎' },
         ].map((stat, i) => (
           <motion.div
             key={i}
